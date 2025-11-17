@@ -96,3 +96,86 @@ groups:
         annotations:
           summary: "Redis connection failures"
           description: "No clients connected to Redis for 2 minutes."
+
+  - name: sim_alerts
+    interval: 30s
+    rules:
+      # High quota usage
+      - alert: QuotaUsageHigh
+        expr: (quota_used / quota_total) > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          component: sim
+        annotations:
+          summary: "SIM quota usage high"
+          description: "SIM {{$labels.iccid}} has used more than 85% of {{$labels.quota_type}} quota."
+
+      # Quota nearly exhausted
+      - alert: QuotaNearlyExhausted
+        expr: (quota_used / quota_total) > 0.95
+        for: 5m
+        labels:
+          severity: critical
+          component: sim
+        annotations:
+          summary: "SIM quota nearly exhausted"
+          description: "SIM {{$labels.iccid}} has used more than 95% of {{$labels.quota_type}} quota."
+
+      # Abnormal data usage spike
+      - alert: AbnormalDataUsageSpike
+        expr: rate(sim_data_usage_bytes[5m]) > (avg_over_time(rate(sim_data_usage_bytes[5m])[1h:5m]) * 3)
+        for: 10m
+        labels:
+          severity: warning
+          component: sim
+        annotations:
+          summary: "Abnormal data usage spike detected"
+          description: "SIM {{$labels.iccid}} is using 3x more data than average."
+
+      # SIM status change
+      - alert: SIMStatusChanged
+        expr: changes(sim_status_count[5m]) > 0
+        for: 1m
+        labels:
+          severity: info
+          component: sim
+        annotations:
+          summary: "SIM status changed"
+          description: "SIM status distribution has changed."
+
+  - name: 1nce_api_alerts
+    interval: 30s
+    rules:
+      # 1NCE API errors
+      - alert: OnceAPIHighErrorRate
+        expr: rate(once_api_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: once-api
+        annotations:
+          summary: "High 1NCE API error rate"
+          description: "1NCE API error rate is above 10% for the last 5 minutes."
+
+      # 1NCE API slow responses
+      - alert: OnceAPISlowResponses
+        expr: histogram_quantile(0.95, rate(once_api_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: once-api
+        annotations:
+          summary: "1NCE API slow responses"
+          description: "95th percentile of 1NCE API response time is above 5 seconds."
+
+      # 1NCE API unavailable
+      - alert: OnceAPIUnavailable
+        expr: once_api_up == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: once-api
+        annotations:
+          summary: "1NCE API unavailable"
+          description: "Unable to reach 1NCE API for more than 2 minutes."
