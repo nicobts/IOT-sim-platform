@@ -99,13 +99,73 @@ uvicorn app.main:app --reload
 python app/main.py
 ```
 
-## API Documentation
+## API Documentation & Testing
+
+### Interactive Documentation
 
 Once the server is running, visit:
 
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-- **OpenAPI JSON**: http://localhost:8000/openapi.json
+- **Swagger UI**: http://localhost:8000/docs - Try endpoints directly in browser
+- **ReDoc**: http://localhost:8000/redoc - Alternative documentation view
+- **OpenAPI JSON**: http://localhost:8000/openapi.json - Machine-readable spec
+
+### Complete Usage Guides
+
+📚 **[Complete API Usage Guide](docs/API_USAGE_GUIDE.md)** - Comprehensive guide with:
+- Step-by-step setup instructions
+- All 40+ endpoints with detailed examples
+- curl and Postman examples for every endpoint
+- Complete authentication workflows
+- Real-world usage scenarios
+- Troubleshooting guide
+
+📋 **[Quick Reference](docs/QUICK_REFERENCE.md)** - One-page cheat sheet with common commands
+
+📮 **[Postman Collection](docs/postman_collection.json)** - Import into Postman for instant testing
+
+### Testing the API
+
+**Automated test script:**
+```bash
+# Test all endpoints automatically
+./scripts/test_api.sh
+
+# Expected output: ✓ All critical tests passed!
+```
+
+**Quick workflow examples:**
+```bash
+# Login and save token
+TOKEN=$(./scripts/api_workflows.sh login admin admin123)
+
+# List all SIMs
+./scripts/api_workflows.sh list $TOKEN
+
+# Monitor a specific SIM
+./scripts/api_workflows.sh monitor $TOKEN 89490200001234567890
+
+# Check data quota
+./scripts/api_workflows.sh check-quota $TOKEN 89490200001234567890 data
+```
+
+**Manual testing with curl:**
+```bash
+# 1. Login
+curl -X POST "http://localhost:8000/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+
+# 2. Save token
+TOKEN="your-access-token-here"
+
+# 3. List SIMs
+curl -X GET "http://localhost:8000/api/v1/sims" \
+  -H "Authorization: Bearer $TOKEN" | jq
+
+# 4. Get SIM details
+curl -X GET "http://localhost:8000/api/v1/sims/89490200001234567890" \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
 
 For detailed API specifications, see [docs/API_SPECIFICATION.md](docs/API_SPECIFICATION.md)
 
