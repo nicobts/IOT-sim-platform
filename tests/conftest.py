@@ -18,6 +18,7 @@ from app.db.session import get_db
 from app.main import app
 from app.models.user import User
 from app.core.security import get_password_hash
+from tests.mocks.mock_once_client import MockOnceClient, get_mock_once_client
 
 # Test database URL (use in-memory SQLite for tests)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -180,3 +181,11 @@ def superuser_auth_headers(test_superuser_token: str) -> dict:
     Get authorization headers for test superuser.
     """
     return {"Authorization": f"Bearer {test_superuser_token}"}
+
+
+@pytest.fixture
+def mock_once_client() -> MockOnceClient:
+    """
+    Get mock 1NCE API client for testing.
+    """
+    return get_mock_once_client()
