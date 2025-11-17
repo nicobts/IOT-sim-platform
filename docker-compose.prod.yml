@@ -339,42 +339,45 @@ services:
       - no-new-privileges:true
 
   # React Frontend (Production build)
-  # Uncomment when Phase 3 is complete
-  # frontend-react:
-  #   build:
-  #     context: ./frontend-react
-  #     dockerfile: Dockerfile.prod
-  #     args:
-  #       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-  #   image: ${DOCKER_USERNAME:-iot}/iot-frontend-react:${VERSION:-latest}
-  #   container_name: iot-frontend-react-prod
-  #   environment:
-  #     - NODE_ENV=production
-  #     - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - iot-network
-  #   restart: unless-stopped
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '0.5'
-  #         memory: 512M
-  #       reservations:
-  #         cpus: '0.25'
-  #         memory: 256M
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "20m"
-  #       max-file: "3"
-  #   security_opt:
-  #     - no-new-privileges:true
-  #   read_only: true
-  #   tmpfs:
-  #     - /tmp
-  #     - /app/.next/cache
+  frontend-react:
+    build:
+      context: ./frontend-react
+      dockerfile: Dockerfile.prod
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    image: ${DOCKER_USERNAME:-iot}/iot-frontend-react:${VERSION:-latest}
+    container_name: iot-frontend-react-prod
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - iot-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Streamlit Admin (Production)
   # Uncomment when Phase 4 is complete

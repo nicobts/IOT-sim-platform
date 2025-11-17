@@ -156,24 +156,33 @@ services:
       timeout: 10s
       retries: 3
 
-  # React Frontend (placeholder for Phase 3)
-  # frontend-react:
-  #   build:
-  #     context: ./frontend-react
-  #     dockerfile: Dockerfile
-  #   container_name: iot-frontend-react
-  #   volumes:
-  #     - ./frontend-react:/app
-  #     - /app/node_modules
-  #   environment:
-  #     - NEXT_PUBLIC_API_URL=http://localhost:8000
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - iot-network
-  #   command: npm run dev
+  # React Frontend (Next.js Dashboard)
+  frontend-react:
+    build:
+      context: ./frontend-react
+      dockerfile: Dockerfile
+      target: dev
+    container_name: iot-frontend-react
+    volumes:
+      - ./frontend-react:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - iot-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: npm run dev
 
   # Streamlit Admin (placeholder for Phase 4)
   # frontend-streamlit:
