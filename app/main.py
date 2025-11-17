@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import time
 
+from app.api.v1 import api_router
 from app.clients.once_client import close_once_client
 from app.core.config import settings
 from app.core.logging import get_logger
@@ -177,11 +178,7 @@ async def root() -> Dict[str, Any]:
 
 
 # Include API routers
-# TODO: Add routers once created
-# from app.api.v1.auth import router as auth_router
-# from app.api.v1.sims import router as sims_router
-# app.include_router(auth_router, prefix=settings.API_V1_PREFIX, tags=["Authentication"])
-# app.include_router(sims_router, prefix=settings.API_V1_PREFIX, tags=["SIMs"])
+app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
 
 # Exception handlers
