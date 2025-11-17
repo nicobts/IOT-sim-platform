@@ -1,0 +1,69 @@
+# Prometheus Configuration
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'iot-sim-platform'
+    environment: 'development'
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+          # - 'alertmanager:9093'
+
+# Load alert rules
+rule_files:
+  - 'alerts.yml'
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # Backend API
+  - job_name: 'backend-api'
+    metrics_path: '/api/v1/metrics'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['backend:8000']
+        labels:
+          service: 'backend-api'
+          component: 'fastapi'
+
+  # PostgreSQL (if using postgres_exporter)
+  # - job_name: 'postgresql'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+  #       labels:
+  #         service: 'postgresql'
+
+  # Redis (if using redis_exporter)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+  #       labels:
+  #         service: 'redis'
+
+  # Node exporter (for system metrics)
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
+  #       labels:
+  #         service: 'node-exporter'
+
+  # Grafana
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+        labels:
+          service: 'grafana'
+
+# Remote write configuration (for external storage)
+# remote_write:
+#   - url: 'http://remote-storage:9090/api/v1/write'

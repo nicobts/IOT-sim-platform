@@ -1,6 +1,12 @@
-# FastAPI IOT SIM Management and Monitoring Server
+# IOT SIM Platform - Full-Stack Monorepo
 
-A production-ready FastAPI server providing complete integration with the 1NCE IoT platform for programmatic management of SIM cards, connectivity, usage tracking, and order management.
+A production-ready full-stack platform providing complete integration with the 1NCE IoT platform for programmatic management of SIM cards, connectivity, usage tracking, and order management.
+
+This is a **monorepo** containing multiple services:
+- **Backend API** (FastAPI) - RESTful API with 1NCE integration
+- **Frontend Dashboard** (React/Next.js) - User-facing web application *(coming in Phase 3)*
+- **Admin Panel** (Streamlit) - Internal management interface *(coming in Phase 4)*
+- **Monitoring Stack** (Prometheus + Grafana) - Metrics and observability
 
 ## Features
 
@@ -33,10 +39,9 @@ A production-ready FastAPI server providing complete integration with the 1NCE I
 
 ### Prerequisites
 
-- Python 3.11+
-- PostgreSQL 15+ (with TimescaleDB)
-- Redis 7+
+- Docker and Docker Compose
 - 1NCE API credentials (client ID and secret)
+- Git
 
 ### 1. Clone the Repository
 
@@ -56,25 +61,28 @@ cp .env.example .env
 nano .env
 ```
 
-### 3. Using Docker Compose (Recommended)
+### 3. Start All Services
 
 ```bash
-# Start all services (PostgreSQL, Redis, API)
+# Start all services (PostgreSQL, Redis, Backend API, Nginx, Prometheus, Grafana)
 docker-compose up -d
 
 # View logs
-docker-compose logs -f api
+docker-compose logs -f backend
 
 # Create admin user
-docker-compose exec api python scripts/create_admin.py
+docker-compose exec backend python scripts/create_admin.py
 
 # Run database migrations
-docker-compose exec api alembic upgrade head
-
-# Access the application
-# API: http://localhost:8000
-# Docs: http://localhost:8000/docs
+docker-compose exec backend alembic upgrade head
 ```
+
+### 4. Access the Platform
+
+- **API Documentation**: http://localhost:8000/docs
+- **Backend API**: http://localhost:8000 (via Nginx on port 80)
+- **Grafana Dashboards**: http://localhost:3001 (admin/admin)
+- **Prometheus Metrics**: http://localhost:9090
 
 ### 4. Manual Setup
 
@@ -227,29 +235,48 @@ alembic history
 
 ## Development
 
-### Project Structure
+### Monorepo Structure
 
 ```
 IOT-sim-platform/
-├── app/
-│   ├── api/v1/          # API endpoints
-│   ├── clients/         # External API clients (1NCE)
-│   ├── core/            # Core functionality (config, security, logging)
-│   ├── db/              # Database configuration and migrations
-│   ├── models/          # SQLAlchemy models
-│   ├── schemas/         # Pydantic schemas
-│   ├── services/        # Business logic
-│   ├── tasks/           # Background tasks
-│   ├── utils/           # Utility functions
-│   └── main.py          # FastAPI application
-├── docs/                # Documentation
-├── scripts/             # Utility scripts
-├── tests/               # Test suite
-├── docker/              # Docker configurations
-├── .env.example         # Environment template
-├── alembic.ini          # Alembic configuration
-├── docker-compose.yml   # Docker Compose configuration
-└── requirements.txt     # Python dependencies
+├── backend/                   # FastAPI Backend Service
+│   ├── app/                  # Application code
+│   │   ├── api/v1/          # API endpoints
+│   │   ├── clients/         # External API clients (1NCE)
+│   │   ├── core/            # Core functionality
+│   │   ├── models/          # SQLAlchemy models
+│   │   ├── services/        # Business logic
+│   │   └── main.py          # FastAPI application
+│   ├── tests/               # Backend tests
+│   ├── Dockerfile           # Backend container
+│   └── requirements.txt     # Python dependencies
+│
+├── frontend-react/          # React/Next.js Dashboard (Phase 3)
+│   └── [Coming Soon]
+│
+├── frontend-streamlit/      # Streamlit Admin Panel (Phase 4)
+│   └── [Coming Soon]
+│
+├── nginx/                   # Nginx Reverse Proxy
+│   ├── nginx.conf          # Main configuration
+│   ├── conf.d/             # Additional configs
+│   └── ssl/                # SSL certificates
+│
+├── monitoring/             # Monitoring Configuration
+│   ├── prometheus/         # Prometheus config
+│   └── grafana/            # Grafana dashboards
+│
+├── scripts/                # Shared utility scripts
+├── docs/                   # Documentation
+├── monorepo-docs/          # Monorepo-specific documentation
+│   ├── GAME_PLAN.md       # Development roadmap
+│   ├── MONOREPO_ARCHITECTURE.md
+│   ├── MIGRATION_GUIDE.md
+│   └── IMPLEMENTATION_CHECKLIST.md
+│
+├── docker-compose.yml      # Development environment
+├── docker-compose.prod.yml # Production environment
+└── .env.example           # Environment template
 ```
 
 ### Running Tests
@@ -401,14 +428,22 @@ Structured JSON logging with request IDs:
 
 ## Documentation
 
-- [Game Plan](docs/GAME_PLAN.md) - Development roadmap
-- [Architecture](docs/ARCHITECTURE.md) - System architecture and design
-- [Database Schema](docs/DATABASE_SCHEMA.md) - Complete database schema
-- [API Specification](docs/API_SPECIFICATION.md) - Full API reference
-- [User Stories](docs/USER_STORIES.md) - Feature requirements
-- [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment
-- [Developer Quickstart](docs/DEVELOPER_QUICKSTART.md) - 15-minute setup guide
-- [Contributing](docs/CONTRIBUTING.md) - Contribution guidelines
+### Monorepo Documentation
+- **[Monorepo Architecture](monorepo-docs/MONOREPO_ARCHITECTURE.md)** - Complete system architecture
+- **[Game Plan](monorepo-docs/GAME_PLAN.md)** - Development roadmap (7 phases)
+- **[Migration Guide](monorepo-docs/MIGRATION_GUIDE.md)** - Step-by-step implementation guide
+- **[Implementation Checklist](monorepo-docs/IMPLEMENTATION_CHECKLIST.md)** - Progress tracking
+
+### API Documentation
+- **[API Usage Guide](docs/API_USAGE_GUIDE.md)** - Complete API guide with examples
+- **[Quick Reference](docs/QUICK_REFERENCE.md)** - One-page cheat sheet
+- **[API Specification](docs/API_SPECIFICATION.md)** - Full API reference
+- **[Postman Collection](docs/postman_collection.json)** - Ready-to-use collection
+
+### Backend Documentation
+- **[Backend README](backend/README.md)** - Backend-specific documentation
+- **[Database Schema](docs/DATABASE_SCHEMA.md)** - Complete database schema
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment
 
 ## Contributing
 
@@ -426,15 +461,30 @@ For issues and questions:
 - Check the [documentation](docs/)
 - Review [common issues](docs/DEVELOPER_QUICKSTART.md#troubleshooting)
 
-## Roadmap
+## Development Roadmap
 
-See [GAME_PLAN.md](docs/GAME_PLAN.md) for the complete development roadmap and upcoming features.
+See [monorepo-docs/GAME_PLAN.md](monorepo-docs/GAME_PLAN.md) for the complete roadmap.
 
-Current Status: **Phase 1 Complete** - Core foundation implemented with:
-- Complete project structure
-- 1NCE API client with OAuth 2.0
-- Database models and migrations
-- Core utilities and configuration
-- Docker setup for local development
+### Current Status: **Phase 2 In Progress**
 
-Next Steps: **Phase 2** - API endpoints and services implementation
+**Completed Phases:**
+- ✅ **Phase 0**: Planning & Documentation
+- ✅ **Phase 1**: Backend Restructure (moved to backend/ directory)
+- 🚧 **Phase 2**: Root Infrastructure (Docker, Nginx, Monitoring)
+
+**Upcoming Phases:**
+- **Phase 3**: React Dashboard (Next.js)
+- **Phase 4**: Streamlit Admin Panel
+- **Phase 5**: Monitoring Stack Enhancement
+- **Phase 6**: CI/CD Pipelines
+- **Phase 7**: Final Documentation & Polish
+
+### Service Status
+- ✅ Backend API - Fully functional
+- ✅ PostgreSQL + TimescaleDB - Configured
+- ✅ Redis Cache - Configured
+- ✅ Nginx Reverse Proxy - Configured
+- ✅ Prometheus - Configured
+- ✅ Grafana - Configured
+- ⏳ React Dashboard - Coming in Phase 3
+- ⏳ Streamlit Admin - Coming in Phase 4

@@ -71,3 +71,59 @@ alembic/versions/*.pyc
 # Editor backups
 *~
 .#*
+
+# ============================================================================
+# MONOREPO SPECIFIC
+# ============================================================================
+
+# Node.js / Frontend
+node_modules/
+.next/
+.nuxt/
+dist/
+.cache/
+.turbo/
+.parcel-cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.pnpm-debug.log
+.npm/
+
+# Build outputs
+build/
+out/
+.build/
+
+# Nginx
+nginx/ssl/*.pem
+nginx/ssl/*.key
+nginx/ssl/*.crt
+nginx/logs/
+nginx/cache/
+
+# Monitoring data
+monitoring/data/
+prometheus_data/
+grafana_data/
+
+# Docker volumes
+postgres_data/
+redis_data/
+
+# Streamlit
+.streamlit/
+*.streamlit/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Backup files
+*.bak
+*.backup
+*.old

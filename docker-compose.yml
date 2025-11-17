@@ -1,0 +1,193 @@
+version: '3.8'
+
+networks:
+  iot-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  grafana_data:
+  prometheus_data:
+
+services:
+  # PostgreSQL Database with TimescaleDB
+  db:
+    image: timescale/timescaledb:latest-pg15
+    container_name: iot-db
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-user}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-password}
+      POSTGRES_DB: ${DATABASE_NAME:-iot_sim_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_timescaledb.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - iot-network
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: iot-redis
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - iot-network
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: iot-backend
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${DATABASE_USER:-user}:${DATABASE_PASSWORD:-password}@db:5432/${DATABASE_NAME:-iot_sim_db}
+      - REDIS_URL=redis://redis:6379/0
+      - ONCE_CLIENT_ID=${ONCE_CLIENT_ID}
+      - ONCE_CLIENT_SECRET=${ONCE_CLIENT_SECRET}
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - RELOAD=true
+      - ENABLE_SCHEDULER=${ENABLE_SCHEDULER:-true}
+      - ENABLE_METRICS=${ENABLE_METRICS:-true}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - iot-network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: iot-nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    networks:
+      - iot-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus (Metrics Collection)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: iot-prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    networks:
+      - iot-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana (Monitoring Dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: iot-grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - iot-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # React Frontend (placeholder for Phase 3)
+  # frontend-react:
+  #   build:
+  #     context: ./frontend-react
+  #     dockerfile: Dockerfile
+  #   container_name: iot-frontend-react
+  #   volumes:
+  #     - ./frontend-react:/app
+  #     - /app/node_modules
+  #   environment:
+  #     - NEXT_PUBLIC_API_URL=http://localhost:8000
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - iot-network
+  #   command: npm run dev
+
+  # Streamlit Admin (placeholder for Phase 4)
+  # frontend-streamlit:
+  #   build:
+  #     context: ./frontend-streamlit
+  #     dockerfile: Dockerfile
+  #   container_name: iot-frontend-streamlit
+  #   volumes:
+  #     - ./frontend-streamlit:/app
+  #   environment:
+  #     - API_URL=http://backend:8000
+  #   ports:
+  #     - "8501:8501"
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - iot-network
