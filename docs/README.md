@@ -1,4 +1,4 @@
-# FastAPI 1NCE Server
+# FastAPI IOT SIM monitoring and management Server
 
 > Production-ready FastAPI server for complete 1NCE IoT platform integration
 
