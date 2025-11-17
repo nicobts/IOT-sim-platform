@@ -16,6 +16,8 @@ from app.clients.once_client import close_once_client
 from app.core.config import settings
 from app.core.logging import get_logger
 from app.db.session import close_db
+from app.tasks.scheduler import start_scheduler, stop_scheduler
+from app.utils.metrics import MetricsMiddleware
 
 logger = get_logger(__name__)
 
@@ -37,10 +39,24 @@ async def lifespan(app: FastAPI):
     # Initialize services here if needed
     # await init_db()  # Only in development, use Alembic in production
 
+    # Start background task scheduler
+    if settings.ENABLE_SCHEDULER:
+        logger.info("starting_scheduler")
+        await start_scheduler()
+        logger.info("scheduler_started")
+    else:
+        logger.info("scheduler_disabled_via_config")
+
     yield
 
     # Shutdown
     logger.info("application_shutdown")
+
+    # Stop scheduler
+    if settings.ENABLE_SCHEDULER:
+        logger.info("stopping_scheduler")
+        await stop_scheduler()
+        logger.info("scheduler_stopped")
 
     # Close connections
     await close_once_client()
@@ -66,6 +82,10 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+# Metrics middleware
+if settings.ENABLE_METRICS:
+    app.add_middleware(MetricsMiddleware)
 
 
 # Request logging middleware
