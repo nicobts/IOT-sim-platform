@@ -109,6 +109,46 @@ Once the server is running, visit:
 
 For detailed API specifications, see [docs/API_SPECIFICATION.md](docs/API_SPECIFICATION.md)
 
+## Production Deployment
+
+### Using the Deployment Script
+
+```bash
+# Copy production environment template
+cp .env.production.template .env.production
+
+# Edit with your production credentials
+nano .env.production
+
+# Run deployment
+chmod +x scripts/deployment/deploy.sh
+./scripts/deployment/deploy.sh production
+```
+
+### Manual Production Deployment
+
+```bash
+# Pull latest images
+docker-compose -f docker-compose.prod.yml pull
+
+# Start services
+docker-compose -f docker-compose.prod.yml up -d
+
+# Run migrations
+docker-compose -f docker-compose.prod.yml exec api alembic upgrade head
+
+# Check health
+curl http://localhost:8000/health
+```
+
+### Monitoring
+
+- **Grafana Dashboard**: http://localhost:3000 (admin/your_password)
+- **Prometheus Metrics**: http://localhost:9090
+- **Application Metrics**: http://localhost:8000/api/v1/metrics
+
+For comprehensive deployment guides, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+
 ## Database Migrations
 
 ```bash
@@ -162,7 +202,45 @@ pip install -r requirements-dev.txt
 pytest
 
 # Run with coverage
-pytest --cov=app --cov-report=html
+pytest --cov=app --cov-report=html --cov-report=term
+
+# Run specific test file
+pytest tests/unit/test_security.py -v
+
+# Run specific test
+pytest tests/unit/test_security.py::TestPasswordHashing::test_hash_password -v
+
+# Run integration tests only
+pytest tests/integration/ -v
+
+# Run with markers
+pytest -m "not slow" -v
+
+# View HTML coverage report
+open htmlcov/index.html
+```
+
+### CI/CD
+
+The project includes GitHub Actions workflows for:
+
+- **Linting & Code Quality**: Black, isort, Flake8, MyPy
+- **Testing**: Automated test suite with PostgreSQL and Redis
+- **Security Scanning**: Safety and Bandit
+- **Docker Build**: Automated image building and pushing
+- **Deployment**: Automated deployment to staging/production
+
+Setup pre-commit hooks for local development:
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Install hooks
+pre-commit install
+
+# Run manually
+pre-commit run --all-files
 
 # Run specific test file
 pytest tests/unit/test_once_client.py
