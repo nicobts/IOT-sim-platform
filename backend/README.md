@@ -2,20 +2,38 @@
 
 FastAPI backend service for IOT SIM management with 1NCE integration.
 
+**Note**: This is part of a monorepo. See the [main README](../README.md) for full platform documentation.
+
 ## Quick Start
 
 ```bash
-# From backend/ directory
+# From repository root
 docker-compose up -d
 
 # Run migrations
-docker-compose exec api alembic upgrade head
+docker-compose exec backend alembic upgrade head
 
 # Create admin user
-docker-compose exec api python scripts/create_admin.py
+docker-compose exec backend python scripts/create_admin.py
 
 # Access API
 open http://localhost:8000/docs
+```
+
+For local development:
+
+```bash
+# From backend/ directory
+cd backend
+
+# Install dependencies
+pip install -r requirements.txt -r requirements-dev.txt
+
+# Set up environment
+cp ../.env.example .env
+
+# Run development server
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ## Development
@@ -66,14 +84,14 @@ backend/
 │   └── e2e/              # End-to-end tests
 ├── alembic.ini           # Alembic configuration
 ├── Dockerfile            # Docker container
-├── docker-compose.yml    # Development environment
 ├── requirements.txt      # Python dependencies
 └── requirements-dev.txt  # Development dependencies
 ```
 
 ## Environment Variables
 
-See `.env.example` for all available configuration options.
+See `../.env.example` (root level) for all available configuration options.
+For local development, copy it to `.env` in the backend directory or root.
 
 Key variables:
 - `DATABASE_URL`: PostgreSQL connection string

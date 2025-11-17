@@ -2,6 +2,8 @@
 
 Internal management interface for advanced administrative tasks.
 
+**Note**: This is part of a monorepo. See the [main README](../README.md) for full platform documentation.
+
 ## Features
 
 - 📊 **Dashboard**: System overview with real-time statistics
@@ -89,6 +91,17 @@ frontend-streamlit/
 - Sync quotas
 
 ## Docker
+
+### Monorepo (Recommended)
+
+```bash
+# From repository root - Start all services
+docker-compose up -d
+
+# Streamlit admin will be available at http://localhost:8501
+```
+
+### Standalone
 
 ```bash
 # Build image

@@ -181,23 +181,17 @@ For detailed API specifications, see [docs/API_SPECIFICATION.md](docs/API_SPECIF
 
 ## Production Deployment
 
-### Using the Deployment Script
+📖 **[Complete Deployment Guide](DEPLOYMENT_GUIDE.md)** - Comprehensive guide covering all deployment scenarios
+
+### Quick Production Deployment
 
 ```bash
 # Copy production environment template
-cp .env.production.template .env.production
+cp .env.example .env.production
 
 # Edit with your production credentials
 nano .env.production
 
-# Run deployment
-chmod +x scripts/deployment/deploy.sh
-./scripts/deployment/deploy.sh production
-```
-
-### Manual Production Deployment
-
-```bash
 # Pull latest images
 docker-compose -f docker-compose.prod.yml pull
 
@@ -205,7 +199,7 @@ docker-compose -f docker-compose.prod.yml pull
 docker-compose -f docker-compose.prod.yml up -d
 
 # Run migrations
-docker-compose -f docker-compose.prod.yml exec api alembic upgrade head
+docker-compose -f docker-compose.prod.yml exec backend alembic upgrade head
 
 # Check health
 curl http://localhost:8000/health
@@ -213,11 +207,16 @@ curl http://localhost:8000/health
 
 ### Monitoring
 
-- **Grafana Dashboard**: http://localhost:3000 (admin/your_password)
+- **Grafana Dashboard**: http://localhost:3001 (admin/your_password)
 - **Prometheus Metrics**: http://localhost:9090
 - **Application Metrics**: http://localhost:8000/api/v1/metrics
 
-For comprehensive deployment guides, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+### Deployment Resources
+
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Complete deployment documentation
+- **[CI/CD Documentation](.github/CICD.md)** - Automated deployment workflows
+- **[Monitoring Guide](monitoring/README.md)** - Observability setup
+- **[Security Guide](docs/DEPLOYMENT.md)** - Security best practices
 
 ## Database Migrations
 
@@ -448,6 +447,12 @@ Structured JSON logging with request IDs:
 
 ## Documentation
 
+### Quick Links
+- 📚 **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Complete deployment documentation
+- 🔄 **[CI/CD Guide](.github/CICD.md)** - Automated workflows and pipelines
+- 📊 **[Monitoring Guide](monitoring/README.md)** - Observability and metrics
+- 🏗️ **[Architecture](monorepo-docs/MONOREPO_ARCHITECTURE.md)** - System design and structure
+
 ### Monorepo Documentation
 - **[Monorepo Architecture](monorepo-docs/MONOREPO_ARCHITECTURE.md)** - Complete system architecture
 - **[Game Plan](monorepo-docs/GAME_PLAN.md)** - Development roadmap (7 phases)
@@ -460,10 +465,17 @@ Structured JSON logging with request IDs:
 - **[API Specification](docs/API_SPECIFICATION.md)** - Full API reference
 - **[Postman Collection](docs/postman_collection.json)** - Ready-to-use collection
 
-### Backend Documentation
-- **[Backend README](backend/README.md)** - Backend-specific documentation
+### Service Documentation
+- **[Backend README](backend/README.md)** - FastAPI backend service
+- **[React Frontend README](frontend-react/README.md)** - Next.js dashboard
+- **[Streamlit Admin README](frontend-streamlit/README.md)** - Admin panel
 - **[Database Schema](docs/DATABASE_SCHEMA.md)** - Complete database schema
-- **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment
+
+### Operations
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Production deployment
+- **[CI/CD Documentation](.github/CICD.md)** - GitHub Actions workflows
+- **[Monitoring Guide](monitoring/README.md)** - Prometheus & Grafana setup
+- **[Security Guide](docs/DEPLOYMENT.md)** - Security best practices
 
 ## Contributing
 
@@ -485,7 +497,7 @@ For issues and questions:
 
 See [monorepo-docs/GAME_PLAN.md](monorepo-docs/GAME_PLAN.md) for the complete roadmap.
 
-### Current Status: **Phase 6 Complete**
+### Current Status: **All Phases Complete! 🎉**
 
 **Completed Phases:**
 - ✅ **Phase 0**: Planning & Documentation
@@ -495,9 +507,7 @@ See [monorepo-docs/GAME_PLAN.md](monorepo-docs/GAME_PLAN.md) for the complete ro
 - ✅ **Phase 4**: Streamlit Admin Panel (Python with Plotly)
 - ✅ **Phase 5**: Monitoring Stack Enhancement (Grafana Dashboards & Advanced Alerts)
 - ✅ **Phase 6**: CI/CD Pipelines (GitHub Actions for Testing, Security, Build & Deploy)
-
-**Upcoming Phases:**
-- **Phase 7**: Final Documentation & Polish
+- ✅ **Phase 7**: Final Documentation & Polish (Deployment Guide, Updated READMEs)
 
 ### Service Status
 - ✅ Backend API - Fully functional

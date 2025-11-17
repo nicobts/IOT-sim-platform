@@ -2,6 +2,8 @@
 
 Next.js 14 dashboard for the IOT SIM Platform with TypeScript and Tailwind CSS.
 
+**Note**: This is part of a monorepo. See the [main README](../README.md) for full platform documentation.
+
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router)
@@ -71,6 +73,17 @@ src/
 - 🔄 SWR for data fetching and caching
 
 ## Docker
+
+### Monorepo (Recommended)
+
+```bash
+# From repository root - Start all services
+docker-compose up -d
+
+# Frontend will be available at http://localhost:3000
+```
+
+### Standalone
 
 ```bash
 # Build image
