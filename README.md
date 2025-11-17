@@ -253,11 +253,21 @@ IOT-sim-platform/
 │   ├── Dockerfile           # Backend container
 │   └── requirements.txt     # Python dependencies
 │
-├── frontend-react/          # React/Next.js Dashboard (Phase 3)
-│   └── [Coming Soon]
+├── frontend-react/          # React/Next.js Dashboard
+│   ├── src/                # Source code
+│   │   ├── app/           # Next.js App Router pages
+│   │   ├── lib/           # API client and utilities
+│   │   └── types/         # TypeScript type definitions
+│   ├── Dockerfile          # Dev container
+│   ├── Dockerfile.prod     # Production container
+│   └── package.json        # Node dependencies
 │
-├── frontend-streamlit/      # Streamlit Admin Panel (Phase 4)
-│   └── [Coming Soon]
+├── frontend-streamlit/      # Streamlit Admin Panel
+│   ├── pages/              # Multi-page app structure
+│   ├── utils/              # API client and helpers
+│   ├── app.py              # Main application
+│   ├── Dockerfile          # Dev container
+│   └── Dockerfile.prod     # Production container
 │
 ├── nginx/                   # Nginx Reverse Proxy
 │   ├── nginx.conf          # Main configuration
@@ -265,8 +275,13 @@ IOT-sim-platform/
 │   └── ssl/                # SSL certificates
 │
 ├── monitoring/             # Monitoring Configuration
-│   ├── prometheus/         # Prometheus config
-│   └── grafana/            # Grafana dashboards
+│   ├── prometheus/         # Prometheus config & alerts
+│   ├── grafana/            # Grafana dashboards & provisioning
+│   └── README.md           # Monitoring documentation
+│
+├── .github/                # GitHub Actions CI/CD
+│   ├── workflows/          # 6 automated workflows
+│   └── CICD.md            # CI/CD documentation
 │
 ├── scripts/                # Shared utility scripts
 ├── docs/                   # Documentation
@@ -311,13 +326,16 @@ open htmlcov/index.html
 
 ### CI/CD
 
-The project includes GitHub Actions workflows for:
+The project includes comprehensive GitHub Actions workflows for:
 
-- **Linting & Code Quality**: Black, isort, Flake8, MyPy
-- **Testing**: Automated test suite with PostgreSQL and Redis
-- **Security Scanning**: Safety and Bandit
-- **Docker Build**: Automated image building and pushing
-- **Deployment**: Automated deployment to staging/production
+- **Backend CI**: Python linting (Black, isort, Ruff, MyPy), testing with coverage, Docker build
+- **Frontend React CI**: ESLint, TypeScript type checking, Next.js build, Docker build
+- **Frontend Streamlit CI**: Python linting, import validation, Docker build
+- **Security Scanning**: Safety, Bandit, npm audit, Trivy, Gitleaks, CodeQL
+- **Docker Build & Push**: Automated multi-service image building to GitHub Container Registry
+- **Deployment**: Manual deployment workflow with zero-downtime updates and rollback
+
+See [.github/CICD.md](.github/CICD.md) for complete CI/CD documentation.
 
 Setup pre-commit hooks for local development:
 
@@ -467,7 +485,7 @@ For issues and questions:
 
 See [monorepo-docs/GAME_PLAN.md](monorepo-docs/GAME_PLAN.md) for the complete roadmap.
 
-### Current Status: **Phase 5 Complete**
+### Current Status: **Phase 6 Complete**
 
 **Completed Phases:**
 - ✅ **Phase 0**: Planning & Documentation
@@ -476,9 +494,9 @@ See [monorepo-docs/GAME_PLAN.md](monorepo-docs/GAME_PLAN.md) for the complete ro
 - ✅ **Phase 3**: React Dashboard (Next.js 14 with TypeScript)
 - ✅ **Phase 4**: Streamlit Admin Panel (Python with Plotly)
 - ✅ **Phase 5**: Monitoring Stack Enhancement (Grafana Dashboards & Advanced Alerts)
+- ✅ **Phase 6**: CI/CD Pipelines (GitHub Actions for Testing, Security, Build & Deploy)
 
 **Upcoming Phases:**
-- **Phase 6**: CI/CD Pipelines
 - **Phase 7**: Final Documentation & Polish
 
 ### Service Status
