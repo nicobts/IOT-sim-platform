@@ -1,0 +1,755 @@
+{
+  "info": {
+    "name": "IOT SIM Management API",
+    "description": "Complete API collection for FastAPI IOT SIM Management Server",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "test_iccid",
+      "value": "89490200001234567890",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health",
+      "item": [
+        {
+          "name": "Basic Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Readiness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/ready",
+              "host": ["{{base_url}}"],
+              "path": ["health", "ready"]
+            }
+          }
+        },
+        {
+          "name": "Liveness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/live",
+              "host": ["{{base_url}}"],
+              "path": ["health", "live"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "pm.collectionVariables.set(\"access_token\", response.access_token);",
+                  "pm.collectionVariables.set(\"refresh_token\", response.refresh_token);",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Access token received\", function () {",
+                  "    pm.expect(response.access_token).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "pm.collectionVariables.set(\"access_token\", response.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Register User (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"is_superuser\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Create API Key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "pm.collectionVariables.set(\"api_key\", response.key);",
+                  "",
+                  "pm.test(\"API key created\", function () {",
+                  "    pm.expect(response.key).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Key\",\n  \"expires_in_days\": 30\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/api-keys",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "api-keys"]
+            }
+          }
+        },
+        {
+          "name": "List API Keys",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/api-keys",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "api-keys"]
+            }
+          }
+        },
+        {
+          "name": "Revoke API Key",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/api-keys/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "api-keys", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. SIM Management",
+      "item": [
+        {
+          "name": "List SIMs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims?page=1&page_size=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List SIMs (with status filter)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims?status=active&page_size=50",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active"
+                },
+                {
+                  "key": "page_size",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create SIM",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"iccid\": \"{{test_iccid}}\",\n  \"imsi\": \"901405123456789\",\n  \"msisdn\": \"+491234567890\",\n  \"label\": \"Test SIM from Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims"]
+            }
+          }
+        },
+        {
+          "name": "Get SIM by ICCID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}"]
+            }
+          }
+        },
+        {
+          "name": "Update SIM",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Updated SIM Label\",\n  \"metadata\": {\n    \"location\": \"Office\",\n    \"device_type\": \"Sensor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}"]
+            }
+          }
+        },
+        {
+          "name": "Sync SIM from 1NCE",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/sync",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "sync"]
+            }
+          }
+        },
+        {
+          "name": "Sync All SIMs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/sync-all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "sync-all"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Usage & Quotas",
+      "item": [
+        {
+          "name": "Get SIM Usage",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/usage",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "usage"]
+            }
+          }
+        },
+        {
+          "name": "Get SIM Usage (with dates)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/usage?start_date=2024-11-01T00:00:00Z&end_date=2024-11-17T23:59:59Z",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "usage"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-11-01T00:00:00Z"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-11-17T23:59:59Z"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sync Usage from 1NCE",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/usage/sync",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "usage", "sync"]
+            }
+          }
+        },
+        {
+          "name": "Get Data Quota",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/quota/data",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "quota", "data"]
+            }
+          }
+        },
+        {
+          "name": "Get SMS Quota",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/quota/sms",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "quota", "sms"]
+            }
+          }
+        },
+        {
+          "name": "Top-up Data Quota (1GB)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quota_type\": \"data\",\n  \"volume\": 1073741824\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/topup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "topup"]
+            }
+          }
+        },
+        {
+          "name": "Top-up SMS Quota (100)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quota_type\": \"sms\",\n  \"volume\": 100\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/topup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "topup"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. SMS",
+      "item": [
+        {
+          "name": "Send SMS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Test message from Postman API\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/sms",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "sms"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Connectivity",
+      "item": [
+        {
+          "name": "Get Connectivity Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/connectivity",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "connectivity"]
+            }
+          }
+        },
+        {
+          "name": "Reset Connectivity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/connectivity/reset",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "connectivity", "reset"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Events",
+      "item": [
+        {
+          "name": "Get All Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/events",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "events"]
+            }
+          }
+        },
+        {
+          "name": "Get SMS Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sims/{{test_iccid}}/events?event_type=sms",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sims", "{{test_iccid}}", "events"],
+              "query": [
+                {
+                  "key": "event_type",
+                  "value": "sms"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Scheduler (Admin)",
+      "item": [
+        {
+          "name": "Get Scheduler Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/scheduler/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "scheduler", "status"]
+            }
+          }
+        },
+        {
+          "name": "Get Job Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/scheduler/jobs/sync_all_sims",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "scheduler", "jobs", "sync_all_sims"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Metrics",
+      "item": [
+        {
+          "name": "Get Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/metrics",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "metrics"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
