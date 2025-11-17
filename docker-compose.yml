@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database with TimescaleDB
+  db:
+    image: timescale/timescaledb:latest-pg15
+    container_name: iot-sim-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-iotuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-iotpassword}
+      POSTGRES_DB: ${POSTGRES_DB:-iot_sim_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_timescaledb.sql:/docker-entrypoint-initdb.d/init_timescaledb.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-iotuser}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - iot-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: iot-sim-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - iot-network
+
+  # FastAPI Application
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    container_name: iot-sim-api
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-iotuser}:${POSTGRES_PASSWORD:-iotpassword}@db:5432/${POSTGRES_DB:-iot_sim_db}
+      - REDIS_URL=redis://redis:6379/0
+      - ONCE_CLIENT_ID=${ONCE_CLIENT_ID}
+      - ONCE_CLIENT_SECRET=${ONCE_CLIENT_SECRET}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - iot-network
+    restart: unless-stopped
+
+  # Prometheus (optional - for monitoring)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: iot-sim-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - iot-network
+    profiles:
+      - monitoring
+
+  # Grafana (optional - for dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: iot-sim-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - iot-network
+    profiles:
+      - monitoring
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  iot-network:
+    driver: bridge
