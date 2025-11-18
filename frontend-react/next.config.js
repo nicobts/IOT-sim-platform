@@ -6,8 +6,8 @@ const nextConfig = {
   // Output configuration for Docker deployment
   output: 'standalone',
 
-  // Enable Turbopack for development (Next.js 15 feature)
-  // Turbopack is now stable and provides 10x faster refresh
+  // Turbopack is now the default bundler in Next.js 16!
+  // No need to specify --turbo flag
   turbo: {
     rules: {
       '*.svg': {
@@ -17,19 +17,24 @@ const nextConfig = {
     },
   },
 
-  // Experimental features for Next.js 15
+  // Next.js 16 features
   experimental: {
-    // Partial Prerendering (PPR) - Next.js 15 killer feature
-    // Combines static and dynamic rendering in a single page
-    ppr: 'incremental',
+    // Partial Prerendering (PPR) - Now stable in Next.js 16
+    // Can be enabled globally instead of incremental
+    ppr: true,
 
-    // React 19 features
-    reactCompiler: true,
+    // Cache Components - New in Next.js 16
+    // Enable the "use cache" directive for component-level caching
+    cacheComponents: true,
 
-    // Improved caching
+    // View Transitions - React 19.2 feature
+    // Animate elements during navigation
+    viewTransitions: true,
+
+    // Improved caching with better staleTimes
     staleTimes: {
-      dynamic: 30, // 30 seconds for dynamic pages
-      static: 180, // 3 minutes for static pages
+      dynamic: 30,  // 30 seconds for dynamic pages
+      static: 180,  // 3 minutes for static pages
     },
 
     // Server Actions improvements
@@ -40,15 +45,29 @@ const nextConfig = {
 
     // TypeScript plugin improvements
     typedRoutes: true,
+
+    // Optimized package imports
+    optimizePackageImports: ['lucide-react', 'recharts', 'date-fns'],
+  },
+
+  // React Compiler - Now STABLE in Next.js 16 (not experimental!)
+  compiler: {
+    // React Compiler automatically memoizes components
+    reactCompiler: true,
+
+    // Remove console logs in production
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
   },
 
   // Environment variables exposed to the browser
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-    NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION || '2.0.0',
+    NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION || '2.1.0',
   },
 
-  // Image optimization with Next.js 15 improvements
+  // Image optimization with Next.js 16 improvements
   images: {
     // Allowed domains for external images
     remotePatterns: [
@@ -57,7 +76,7 @@ const nextConfig = {
         hostname: '**',
       },
     ],
-    // Image formats - Next.js 15 adds better AVIF support
+    // Image formats - AVIF is default in Next.js 16
     formats: ['image/avif', 'image/webp'],
     // Disable optimization in development for faster builds
     unoptimized: process.env.NODE_ENV === 'development',
@@ -65,14 +84,6 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     // Image sizes for different viewports
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-  },
-
-  // Compiler options
-  compiler: {
-    // Remove console logs in production
-    removeConsole: process.env.NODE_ENV === 'production' ? {
-      exclude: ['error', 'warn'],
-    } : false,
   },
 
   // Headers for security and performance
@@ -125,7 +136,7 @@ const nextConfig = {
     ];
   },
 
-  // Webpack configuration (fallback for Turbopack)
+  // Webpack configuration (Turbopack is preferred in Next.js 16)
   webpack: (config, { isServer }) => {
     // Fixes for Node.js modules
     if (!isServer) {
@@ -152,10 +163,11 @@ const nextConfig = {
   generateEtags: true,
   compress: true,
 
-  // Logging
+  // Logging - Enhanced in Next.js 16
   logging: {
     fetches: {
       fullUrl: process.env.NODE_ENV === 'development',
+      hmrRefreshes: true,  // New in Next.js 16
     },
   },
 }
