@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    // Target ES2022 for better performance
+    "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -13,15 +14,42 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+
+    // Next.js 15 TypeScript plugin
     "plugins": [
       {
         "name": "next"
       }
     ],
+
+    // Path aliases
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/store/*": ["./src/store/*"],
+      "@/app/*": ["./src/app/*"]
+    },
+
+    // Additional strict checks for better type safety
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // React 19 & Next.js 15 compatibility
+    "verbatimModuleSyntax": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
